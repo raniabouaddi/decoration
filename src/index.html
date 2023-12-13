@@ -31,12 +31,6 @@
             <input type="text" class="form-control" id="link" placeholder="Enter URL">
         </div>
 
-        <!-- Ajoutez cette partie dans votre formulaire -->
-        <div class="form-group" id="fileInput">
-            <label for="imageFile">Upload Image:</label>
-            <input type="file" class="form-control-file" id="imageFile" accept="image/*">
-        </div>
-
         <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
     </form>
 
@@ -59,15 +53,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script>
-    const functionEndpoint = 'https://testfunc0198.azurewebsites.net/api/decoration?url='; // Remplacez ceci par l'URL de votre fonction Azure
-
     function toggleInputField() {
         var inputType = document.getElementById('inputType').value;
         document.getElementById('linkInput').style.display = (inputType === 'link') ? 'block' : 'none';
-        document.getElementById('fileInput').style.display = (inputType === 'image') ? 'block' : 'none';
     }
 
-    async function submitForm() {
+     async function submitForm() {
         var inputType = document.getElementById('inputType').value;
         var input;
 
@@ -80,29 +71,17 @@
             }
 
             input = { 'url': url };
-        } else if (inputType === 'image') {
-            var fileInput = document.getElementById('imageFile');
-            var file = fileInput.files[0];
-            
-            if (!file) {
-                alert('Please select an image file.');
-                return;
-            }
-
-            // Upload the image to Blob Storage
-            var imageUrl = await uploadImageToBlobStorage(file);
-            input = { 'url': imageUrl };
         }
 
         try {
-            const functionUrl = ${functionEndpoint}?url=${encodeURIComponent(input.url)};
+            const functionUrl = 'https://testfunc0198.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
             const apiKey = 'rania123++'; // Replace with your actual Azure Function key
 
             const response = await fetch(functionUrl, {
-                method: 'GET',
+                method: 'GET', // Adjust the method if your Azure Function expects a different HTTP method
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-functions-key': apiKey
+                    'x-functions-key': apiKey // Include the Azure Function key in the headers
                 }
             });
 
@@ -110,7 +89,7 @@
                 const result = await response.json();
                 displayResult(result);
             } else {
-                throw new Error('Error: ' + response.status + ', ' + await response.text());
+                throw new Error(Error: ${response.status}, ${await response.text()});
             }
         } catch (error) {
             console.error(error);
@@ -134,27 +113,9 @@
         document.getElementById('result').style.display = 'block';
     }
 
+    // Function to validate if the input is a valid image URL
     function isValidImageUrl(url) {
         return /^https?:\/\/\S+\.(?:png|jpg|jpeg|bmp)$/i.test(url);
-    }
-
-    async function uploadImageToBlobStorage(file) {
-        var storageAccountName = 'decofrontstockage';
-        var containerName = 'docofrontconteneur';
-
-        var blobService = AzureStorage.Blob.createBlobService(storageAccountName);
-        var blobName = 'image_' + Date.now() + '_' + file.name;
-
-        return new Promise((resolve, reject) => {
-            blobService.createBlockBlobFromBrowserFile(containerName, blobName, file, {}, (error, result, response) => {
-                if (!error) {
-                    var imageUrl = blobService.getUrl(containerName, blobName);
-                    resolve(imageUrl);
-                } else {
-                    reject(error);
-                }
-            });
-        });
     }
 </script>
 </body>
