@@ -1,17 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
-  <title>Vanilla JavaScript App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Custom Vision API Demo</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 50px;
+        }
+    </style>
 </head>
-
 <body>
-  <main>
-    <h1>Vanilla JavaScript App</h1>
-  </main>
-</body>
 
+<div class="container">
+    <h1 class="mt-5 mb-4">Custom Vision Plants</h1>
+    
+    <form id="customVisionForm">
+        <div class="form-group">
+            <label for="inputType">Select Input Type:</label>
+            <select class="form-control" id="inputType" onchange="toggleInputField()">
+                <option value="link">Link</option>
+                <option value="image">Image</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="linkInput">
+            <label for="link">Enter Link:</label>
+            <input type="text" class="form-control" id="link" placeholder="Enter URL">
+            <small class="form-text text-muted">URL should point to an image. File formats accepted: jpg, png, bmp. File size should not exceed 4mb.</small>
+        </div>
+        
+        <div class="form-group" id="imageInput" style="display: none;">
+            <label for="image">Upload Image:</label>
+            <input type="file" class="form-control-file" id="image" accept=".jpg, .jpeg, .png, .bmp">
+            <small class="form-text text-muted">File formats accepted: jpg, png, bmp. File size should not exceed 4mb.</small>
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+    </form>
+
+    <div id="result" class="mt-4" style="display: none;">
+        <h2>Predictions</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Tag</th>
+                    <th scope="col">Probability</th>
+                </tr>
+            </thead>
+            <tbody id="predictionsTableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    function toggleInputField() {
+        var inputType = document.getElementById('inputType').value;
+        document.getElementById('linkInput').style.display = (inputType === 'link') ? 'block' : 'none';
+        document.getElementById('imageInput').style.display = (inputType === 'image') ? 'block' : 'none';
+    }
+
+    async function submitForm() {
+        var inputType = document.getElementById('inputType').value;
+        var input;
+
+        if (inputType === 'link') {
+            var url = document.getElementById('link').value;
+            // Validate URL
+            if (!isValidImageUrl(url)) {
+                alert('URL should point to an image. File formats accepted: jpg, png, bmp. File size should not exceed 4mb.');
+                return;
+            }
+
+            input = { 'Url': url };
+        } else {
+            var imageInput = document.getElementById('image');
+            if (imageInput.files.length > 0) {
+                var fileSize = imageInput.files[0].size; // in bytes
+                var fileType = imageInput.files[0].type;
+
+                // Check file size and type
+                if (fileSize > 4 * 1024 * 1024) { // 4mb
+                    alert('File size should not exceed 4mb.');
+                    return;
+                }
+
+                if (!fileType.match(/^image\/(jpg|jpeg|png|bmp)$/)) {
+                    alert('File formats accepted: jpg, jpeg, png, bmp.');
+                    return;
+                }
+
+                input = new FormData();
+                input.append('Image', imageInput.files[0]);
+            } else {
+                alert('Please select an image file.');
+                return;
+            }
+        }
+
+        try {
+            const headers = {
+                'Prediction-Key': '6efea070324b4ca9bbb64d5f143fe570',
+            };
+
+            const endpoint = "https://westeurope.api.cognitive.microsoft.com/customvision/v3.0/Prediction/0bf78b73-8e79-41f7-8327-9df80ccefc10/classify/iterations/Iteration2/url";
+
+            // Check if input is FormData (image file) or JSON (URL)
+            const isImage = input instanceof FormData;
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: isImage ? headers : { ...headers, 'Content-Type': 'application/json' },
+                body: isImage ? input : JSON.stringify(input),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                displayResult(result);
+            } else {
+                throw new Error(`Error: ${response.status}, ${await response.text()}`);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function displayResult(result) {
+        var predictionsTableBody = document.getElementById('predictionsTableBody');
+        predictionsTableBody.innerHTML = '';
+
+        for (var i = 0; i < result.predictions.length; i++) {
+            var prediction = result.predictions[i];
+            var row = predictionsTableBody.insertRow(i);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+
+            cell1.innerHTML = prediction.tagName;
+            cell2.innerHTML = (prediction.probability * 100).toFixed(2) + '%';
+        }
+
+        document.getElementById('result').style.display = 'block';
+    }
+
+    // Function to validate if the URL points to an image
+    function isValidImageUrl(url) {
+        var imageExtensions = ['.jpg', '.jpeg', '.png', '.bmp'];
+        var extension = url.substring(url.lastIndexOf('.')).toLowerCase();
+        return imageExtensions.includes(extension);
+    }
+</script>
+</body>
 </html>
