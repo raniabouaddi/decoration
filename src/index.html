@@ -18,6 +18,11 @@
     <h1 class="mt-5 mb-4">Custom Vision Decoration</h1>
     
     <form id="customVisionForm">
+        <!-- Ajoutez cette partie dans votre formulaire -->
+<div class="form-group" id="fileInput">
+    <label for="imageFile">Upload Image:</label>
+    <input type="file" class="form-control-file" id="imageFile" accept="image/*">
+</div>
         <div class="form-group">
             <label for="inputType">Select Input Type:</label>
             <select class="form-control" id="inputType" onchange="toggleInputField()">
