@@ -29,13 +29,6 @@
         <div class="form-group" id="linkInput">
             <label for="link">Enter Link:</label>
             <input type="text" class="form-control" id="link" placeholder="Enter URL">
-            <small class="form-text text-muted">URL should point to an image. File formats accepted: jpg, png, bmp. File size should not exceed 4mb.</small>
-        </div>
-        
-        <div class="form-group" id="imageInput" style="display: none;">
-            <label for="image">Upload Image:</label>
-            <input type="file" class="form-control-file" id="image" accept=".jpg, .jpeg, .png, .bmp">
-            <small class="form-text text-muted">File formats accepted: jpg, png, bmp. File size should not exceed 4mb.</small>
         </div>
 
         <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
@@ -63,10 +56,9 @@
     function toggleInputField() {
         var inputType = document.getElementById('inputType').value;
         document.getElementById('linkInput').style.display = (inputType === 'link') ? 'block' : 'none';
-        document.getElementById('imageInput').style.display = (inputType === 'image') ? 'block' : 'none';
     }
 
-    async function submitForm() {
+     async function submitForm() {
         var inputType = document.getElementById('inputType').value;
         var input;
 
@@ -74,50 +66,23 @@
             var url = document.getElementById('link').value;
             // Validate URL
             if (!isValidImageUrl(url)) {
-                alert('URL should point to an image. File formats accepted: jpg, png, bmp. File size should not exceed 4mb.');
+                alert('Please enter a valid URL.');
                 return;
             }
 
-            input = { 'Url': url };
-        } else {
-            var imageInput = document.getElementById('image');
-            if (imageInput.files.length > 0) {
-                var fileSize = imageInput.files[0].size; // in bytes
-                var fileType = imageInput.files[0].type;
-
-                // Check file size and type
-                if (fileSize > 4 * 1024 * 1024) { // 4mb
-                    alert('File size should not exceed 4mb.');
-                    return;
-                }
-
-                if (!fileType.match(/^image\/(jpg|jpeg|png|bmp)$/)) {
-                    alert('File formats accepted: jpg, jpeg, png, bmp.');
-                    return;
-                }
-
-                input = new FormData();
-                input.append('Image', imageInput.files[0]);
-            } else {
-                alert('Please select an image file.');
-                return;
-            }
+            input = { 'url': url };
         }
 
         try {
-            const headers = {
-                'Prediction-Key': '6efea070324b4ca9bbb64d5f143fe570',
-            };
+            const functionUrl = 'https://testfunc0198.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
+            const apiKey = 'rania123++'; // Replace with your actual Azure Function key
 
-            const endpoint = "https://westeurope.api.cognitive.microsoft.com/customvision/v3.0/Prediction/0bf78b73-8e79-41f7-8327-9df80ccefc10/classify/iterations/Iteration2/url";
-
-            // Check if input is FormData (image file) or JSON (URL)
-            const isImage = input instanceof FormData;
-
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: isImage ? headers : { ...headers, 'Content-Type': 'application/json' },
-                body: isImage ? input : JSON.stringify(input),
+            const response = await fetch(functionUrl, {
+                method: 'GET', // Adjust the method if your Azure Function expects a different HTTP method
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-functions-key': apiKey // Include the Azure Function key in the headers
+                }
             });
 
             if (response.ok) {
@@ -148,11 +113,9 @@
         document.getElementById('result').style.display = 'block';
     }
 
-    // Function to validate if the URL points to an image
+    // Function to validate if the input is a valid image URL
     function isValidImageUrl(url) {
-        var imageExtensions = ['.jpg', '.jpeg', '.png', '.bmp'];
-        var extension = url.substring(url.lastIndexOf('.')).toLowerCase();
-        return imageExtensions.includes(extension);
+        return /^https?:\/\/\S+\.(?:png|jpg|jpeg|bmp)$/i.test(url);
     }
 </script>
 </body>
