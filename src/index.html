@@ -58,22 +58,24 @@
         document.getElementById('linkInput').style.display = (inputType === 'link') ? 'block' : 'none';
     }
 
-     async function submitForm() {
-        var inputType = document.getElementById('inputType').value;
-        var input;
+    async function submitForm() {
+    var inputType = document.getElementById('inputType').value;
+    var input;
 
-        if (inputType === 'link') {
-            var url = document.getElementById('link').value;
-            // Validate URL
-            if (!isValidImageUrl(url)) {
-                alert('Please enter a valid URL.');
-                return;
-            }
-
-            input = { 'url': url };
+    if (inputType === 'link') {
+        var url = document.getElementById('link').value;
+        // Validate URL
+        if (!isValidImageUrl(url)) {
+            alert('Please enter a valid URL.');
+            return;
         }
 
-        try {
+        input = { 'url': url };
+    }
+
+    try {
+        // Check if input is defined before accessing input.url
+        if (input && input.url) {
             const functionUrl = 'https://testfunc0198.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
             const apiKey = 'rania123++'; // Replace with your actual Azure Function key
 
@@ -91,10 +93,14 @@
             } else {
                 throw new Error(`Error: ${response.status}, ${await response.text()}`);
             }
-        } catch (error) {
-            console.error(error);
+        } else {
+            alert('Please select a valid input type.');
         }
+    } catch (error) {
+        console.error(error);
     }
+}
+
 
     function displayResult(result) {
         var predictionsTableBody = document.getElementById('predictionsTableBody');
