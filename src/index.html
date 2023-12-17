@@ -15,7 +15,7 @@
 <body>
 
 <div class="container">
-    <h1 class="mt-5 mb-4">Custom Vision Decoration</h1>
+    <h1 class="mt-5 mb-4">Website of Decoration</h1>
     
     <form id="customVisionForm">
         <div class="form-group">
@@ -29,6 +29,13 @@
         <div class="form-group" id="linkInput">
             <label for="link">Enter Link:</label>
             <input type="text" class="form-control" id="link" placeholder="Enter URL">
+            <small class="form-text text-muted">URL should point to an image. File formats accepted: jpg, png, bmp. File size should not exceed 4mb.</small>
+        </div>
+        
+        <div class="form-group" id="imageInput" style="display: none;">
+            <label for="image">Upload Image:</label>
+            <input type="file" class="form-control-file" id="image" accept=".jpg, .jpeg, .png, .bmp">
+            <small class="form-text text-muted">File formats accepted: jpg, png, bmp. File size should not exceed 4mb.</small>
         </div>
 
         <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
@@ -48,6 +55,7 @@
     </div>
 </div>
 
+
 <!-- Bootstrap JS, Popper.js, and jQuery -->
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
@@ -58,24 +66,22 @@
         document.getElementById('linkInput').style.display = (inputType === 'link') ? 'block' : 'none';
     }
 
-    async function submitForm() {
-    var inputType = document.getElementById('inputType').value;
-    var input;
+     async function submitForm() {
+        var inputType = document.getElementById('inputType').value;
+        var input;
 
-    if (inputType === 'link') {
-        var url = document.getElementById('link').value;
-        // Validate URL
-        if (!isValidImageUrl(url)) {
-            alert('Please enter a valid URL.');
-            return;
+        if (inputType === 'link') {
+            var url = document.getElementById('link').value;
+            // Validate URL
+            if (!isValidImageUrl(url)) {
+                alert('Please enter a valid URL.');
+                return;
+            }
+
+            input = { 'url': url };
         }
 
-        input = { 'url': url };
-    }
-
-    try {
-        // Check if input is defined before accessing input.url
-        if (input && input.url) {
+        try {
             const functionUrl = 'https://testfunc0198.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
             const apiKey = 'rania123++'; // Replace with your actual Azure Function key
 
@@ -91,16 +97,12 @@
                 const result = await response.json();
                 displayResult(result);
             } else {
-                throw new Error(`Error: ${response.status}, ${await response.text()}`);
+throw new Error(`Error: ${response.status}, ${await response.text()}`);
             }
-        } else {
-            alert('Please select a valid input type.');
+        } catch (error) {
+            console.error(error);
         }
-    } catch (error) {
-        console.error(error);
     }
-}
-
 
     function displayResult(result) {
         var predictionsTableBody = document.getElementById('predictionsTableBody');
