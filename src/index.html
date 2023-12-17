@@ -109,8 +109,8 @@
             }
 
             try {
-                const functionUrl = 'https://planteclass.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
-                const apiKey = 'yasmine123++'; // Replace with your actual Azure Function key
+                const functionUrl = "https://planteclass.azurewebsites.net/api/decoration?url=" + encodeURIComponent(input.url);
+                const apiKey = "yasmine123++"; // Replace with your actual Azure Function key
 
                 const response = await fetch(functionUrl, {
                     method: 'GET', // Adjust the method if your Azure Function expects a different HTTP method
