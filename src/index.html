@@ -119,42 +119,47 @@
     }
 
      async function submitForm() {
-        var inputType = document.getElementById('inputType').value;
-        var input;
+    var inputType = document.getElementById('inputType').value;
+    var input;
 
-        if (inputType === 'link') {
-            var url = document.getElementById('link').value;
-            // Validate URL
-            if (!isValidImageUrl(url)) {
-                alert('Please enter a valid URL.');
-                return;
-            }
-
-            input = { 'url': url };
+    if (inputType === 'link') {
+        var url = document.getElementById('link').value;
+        // Validate URL
+        if (!isValidImageUrl(url)) {
+            alert('Please enter a valid URL.');
+            return;
         }
 
-        try {
-            const functionUrl = 'https://testfunc0198.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
-            const apiKey = 'rania123++'; // Replace with your actual Azure Function key
-
-            const response = await fetch(functionUrl, {
-                method: 'GET', // Adjust the method if your Azure Function expects a different HTTP method
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-functions-key': apiKey // Include the Azure Function key in the headers
-                }
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                displayResult(result);
-            } else {
-throw new Error(`Error: ${response.status}, ${await response.text()}`);
-            }
-        } catch (error) {
-            console.error(error);
-        }
+        input = { 'url': url };
+    } else {
+        // Provide a default value or handle other input types if needed
+        alert('Invalid input type.');
+        return;
     }
+
+    try {
+        const functionUrl = 'https://testfunc0198.azurewebsites.net/api/decoration?url=' + encodeURIComponent(input.url);
+        const apiKey = 'rania123++'; // Replace with your actual Azure Function key
+
+        const response = await fetch(functionUrl, {
+            method: 'GET', // Adjust the method if your Azure Function expects a different HTTP method
+            headers: {
+                'Content-Type': 'application/json',
+                'x-functions-key': apiKey // Include the Azure Function key in the headers
+            }
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            displayResult(result);
+        } else {
+            throw new Error(`Error: ${response.status}, ${await response.text()}`);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
 
     function displayResult(result) {
         var predictionsTableBody = document.getElementById('predictionsTableBody');
